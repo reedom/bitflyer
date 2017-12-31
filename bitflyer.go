@@ -742,7 +742,7 @@ type Childorders []struct {
 	OutstandingSize        float64 `json:"outstanding_size"`
 	CancelSize             float64 `json:"cancel_size"`
 	ExecutedSize           float64 `json:"executed_size"`
-	TotalCommission        int     `json:"total_commission"`
+	TotalCommission        float64 `json:"total_commission"`
 }
 
 func (c *Client) GetMyChildorders(ctx context.Context, productCode string, page *Page, childOrderState, parentOrderID string) (*Childorders, error) {
@@ -789,7 +789,7 @@ type Parentorders []struct {
 	OutstandingSize         float64 `json:"outstanding_size"`
 	CancelSize              float64 `json:"cancel_size"`
 	ExecutedSize            float64 `json:"executed_size"`
-	TotalCommission         int     `json:"total_commission"`
+	TotalCommission         float64 `json:"total_commission"`
 }
 
 func (c *Client) GetMyParentorders(ctx context.Context, productCode string, page *Page, parentOrderState string) (*Parentorders, error) {
