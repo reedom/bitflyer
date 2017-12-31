@@ -17,6 +17,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -89,13 +90,43 @@ func (c *Client) newPrivateRequest(ctx context.Context, method, spath string, va
 		bodyText = ""
 	}
 	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
-	sign := c.createHMAC(timestamp+method+path.Join(c.URL.Path, spath)+bodyText, c.APISecret)
+	sign := c.createHMAC(timestamp+method+c.nomalizedRequestPath(req, values)+bodyText, c.APISecret)
 	req.Header.Set("ACCESS-KEY", c.APIKey)
 	req.Header.Set("ACCESS-TIMESTAMP", timestamp)
 	req.Header.Set("ACCESS-SIGN", sign)
 	req.Header.Set("Content-Type", "application/json")
 
 	return req, nil
+}
+
+func (c *Client) nomalizedRequestPath(req *http.Request, values url.Values) string {
+	if len(values) == 0 {
+		return req.URL.Path
+	}
+
+	buf := bytes.NewBufferString(req.URL.Path)
+
+	// Append sorted query string part
+
+	keys := make([]string, 0, len(values))
+	for key, _ := range values {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	for i, key := range keys {
+		for j, v := range values[key] {
+			if i == 0 && j == 0 {
+				buf.WriteString("?")
+			} else {
+				buf.WriteString("&")
+			}
+			buf.WriteString(key)
+			buf.WriteString("=")
+			buf.WriteString(v)
+		}
+	}
+	return buf.String()
 }
 
 func (c *Client) createHMAC(msg, key string) string {
